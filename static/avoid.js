@@ -43,18 +43,22 @@ function Monster(size, mass, speed, point, dir) {
 												  				  y: Math.random()*canvas.height}:
 												  				 point;
 	this.mass = (typeof point === 'undefined' || size == null)? Math.pow(this.size,2) : mass;
+	
 	if (typeof dir === 'undefined') {
 		var x = Math.random() - 0.5;
 		var y = Math.random() - 0.5;
 		n = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
 		this.dir = {x: x/n, y: y/n};
-	} else this.dir = dir;
-
+	} else {
+		this.dir = dir;
+	}
+	
 	this.draw = function() {
 		ctx.beginPath();
 		ctx.arc(this.point.x, this.point.y, this.size, 0, 2*Math.PI);
 		ctx.stroke();
-	}
+	};
+	
 	this.moveTowards = function(point, speed) {
 		if (typeof speed === 'undefined') speed = this.speed;
 		var dx = point.x - this.point.x;
@@ -62,25 +66,30 @@ function Monster(size, mass, speed, point, dir) {
 		var n = this.distFrom(point);
 		this.dir = {x: dx/n, y: dy/n};
 		this.move(speed);
-	}
+	};
+	
 	this.isTouching = function(point) {
 		return this.distFrom(point) <= this.size;
-	}
+	};
+	
 	this.wallTouched = function() {
 		if (this.point.x - this.size <= 0) return 'left';
 		if (this.point.y - this.size <= 0) return 'top';
 		if (this.point.x + this.size >= canvas.width) return 'right';
 		if (this.point.y + this.size >= canvas.height) return 'bottom';
 		return 'none';
-	}
+	};
+	
 	this.distFrom = function(point) {
 		var dx = point.x - this.point.x;
 		var dy = point.y - this.point.y;
 		return Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2));
-	}
+	};
+	
 	this.isOverlapping = function(monster) {
 		return this.distFrom(monster.point) <= this.size + monster.size;
-	}
+	};
+	
 	this.unOverlap = function() {
 		for (var c = 0; c < monsters.indexOf(this); c++) {
 			var monster = monsters[c];
@@ -88,7 +97,8 @@ function Monster(size, mass, speed, point, dir) {
 			//var speed = -1*this.speed; //need at least this to be stablely not overlapping, but will cause temporary overlap
 			if (this.isOverlapping(monster)) this.moveTowards(monster.point, speed);
 		}
-	}
+	};
+	
 	this.repel = function(k) {
 		for (var c = 0; c < monsters.length; c++) {
 			var monster = monsters[c];
@@ -96,11 +106,13 @@ function Monster(size, mass, speed, point, dir) {
 			var speed = -1 * k * (1/Math.sqrt(this.distFrom(monster.point))) * this.speed;
 			this.moveTowards(monster.point, speed);
 		}
-	}
+	};
+	
 	this.calcMomentum = function() {
 		return {x: this.mass * this.speed * this.dir.x,
 				y: this.mass * this.speed * this.dir.y};
-	}
+	};
+	
 	this.bounceMonster = function(monster) {
 		var m1 = this.mass;
 		var m2 = monster.mass;
@@ -118,13 +130,15 @@ function Monster(size, mass, speed, point, dir) {
 		this.dir = v1.u;
 		monster.speed = v2.k;
 		monster.dir = v2.u;
-	}
+	};
+	
 	this.bounceWall = function(wall) {
 		if (wall === 'left') this.dir.x = Math.abs(this.dir.x);
 		if (wall === 'top') this.dir.y = Math.abs(this.dir.y);
 		if (wall === 'right') this.dir.x = -1 * Math.abs(this.dir.x);
 		if (wall === 'bottom') this.dir.y = -1 * Math.abs(this.dir.y);
-	}
+	};
+	
 	this.moveBounce = function() {
 		for (var c = 0; c < monsters.indexOf(this); c++) {
 			var monster = monsters[c];
@@ -140,18 +154,20 @@ function Monster(size, mass, speed, point, dir) {
 			}
 		}
 		this.move();
-	}
+	};
+	
 	this.move = function(speed) {
 		if (typeof speed === 'undefined') speed = this.speed;
 		this.point.x += speed * this.dir.x;
 		this.point.y += speed * this.dir.y;
-	}
+	};
 }
 
 function moveSolids(){
 	monsters.sort(function(a, b){
-		return a.distFrom(me) - b.distFrom(me)
+		return a.distFrom(me) - b.distFrom(me);
 	});
+	
 	monsters.map(function(monster){
 		if (monster.isTouching(me)) console.log('nooo!');
 		monster.draw();
@@ -162,6 +178,7 @@ function moveSolids(){
 
 function moveRepel(k){
 	if (typeof k === 'undefined') k = 0.6;
+	
 	monsters.map(function(monster){
 		if (monster.isTouching(me)) console.log('nooo!');
 		monster.draw();
