@@ -3,6 +3,7 @@ var ctx = canvas.getContext("2d");
 var rect = canvas.getBoundingClientRect();
 var me = {x: 0, y: 0}
 var monsters = [];
+var startTime = null;
 
 //var socket = io.connect('http://localhost:5000/avoid_data');
 
@@ -51,6 +52,7 @@ function Monster(size, mass, speed, point, dir) {
 	} else this.dir = dir;
 
 	this.draw = function() {
+		ctx.strokeStyle = 'black';
 		ctx.beginPath();
 		ctx.arc(this.point.x, this.point.y, this.size, 0, 2*Math.PI);
 		ctx.stroke();
@@ -130,7 +132,6 @@ function Monster(size, mass, speed, point, dir) {
 			var monster = monsters[c];
 			var wall = this.wallTouched();
 			if (wall !== 'none') {
-				console.log(wall);
 				this.bounceWall(wall);
 				break;
 			}
@@ -178,10 +179,49 @@ function moveBounce(){
 	});
 }
 
+function Door(color, point, onclick){
+	this.color = color;
+	this.topLeft = point;
+	this.size = 10;
+	this.onclick = onclick;
+	this.isInside = function(point) {
+		var p = vectorMinus(point, this.topLeft); //relative point
+		return p.x > 0 && p.x < this.size && p.y > 0 && p.y < this.size;
+	}
+	this.draw = function() {
+		ctx.strokeStyle = color;
+		ctx.strokeRect(this.topLeft.x, this.topLeft.y, this.size, this.size);
+	}
+}
+
+function makeEntrance(){
+	var onclick = function() {
+		startTime = Date.now();
+		console.log('start:' + startTime);
+	};
+	return new Door('green', {x: 10, y: 10}, onclick);
+}
+
+function makeExit(){
+	var onclick = function() {
+		console.log(Date.now() - startTime);
+		startTime = null;};
+	return new Door('red', {x: canvas.width-20, y: canvas.height-20}, onclick);
+}
+
 function main(){
 	for (var c = 0; c < 50; c++) monsters.push(new Monster());
+	var entrance = makeEntrance();
+	var exit = makeExit();
+	canvas.onclick = function(e) {
+		if (entrance.isInside(me)) entrance.onclick();
+		if (exit.isInside(me)) exit.onclick();
+	}
 	setInterval(function () {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		entrance.draw();
+		exit.draw();
+
 		moveBounce(); 
 	}, 30);
 }
